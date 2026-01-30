@@ -34,16 +34,32 @@ dice_art={
 }
 
 
-def turn(players, current):
-    print(f"Player {players[current].name}, you're up!")
+def re_roll(players, current):
     die=dice()
     die.roll()
     round_score=die.determine_points()
-    total=die.get_total()
+    total=players[current].score
     die.print_dice()
     print(f"You rolled a {die.indx[0]}, a {die.indx[1]}, and a {die.indx[2]}")
     print(f"Round score: {round_score}")
-    print(f"Overall score: {total}")
+    return round_score, total
+
+
+def turn(players, current):
+    print(f"Player {players[current].name}, you're up!")
+    while True:
+        round_score, total=re_roll(players, current)
+        if round_score>49:
+            reroll=input(("Would you like to roll again? (y or n only or treated as a yes) ")).strip().lower()
+        else:
+            print("You Farkled!")
+            break
+        if reroll=="n" or reroll=="no":
+            break
+        else:
+            print("Re-rolling...")
+
+    print(f"Overall score: {total+round_score}")
     players[current].score+=round_score
 
     return players
@@ -66,15 +82,16 @@ def main():
         print("please try again")
     
     for i in range(player_count):
-        input_name = input(f"Enter player {i+1}'s name")
+        input_name = input(f"Enter player {i+1}'s name: ")
         players.append(player(input_name))
     
     gameloop=1
     while True:
         input(f"Yall ready for round {gameloop}? (press enter to continue)")
+        gameloop+=1
         for i in range(len(players)):
             players=turn(players, i)
-            if players[i]>=score_cap:
+            if players[i].score>=score_cap:
                 win=True
                 winning_player=i
                 break
@@ -120,10 +137,11 @@ class dice:
                 break
             elif int(self.indx[i])==1:
                 total+=100
-            elif int(slef.indx[i])==5:
+            elif int(self.indx[i])==5:
                 total+=50
             else:
                 total+=0
+
         return total
 
 
