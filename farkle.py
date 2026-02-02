@@ -34,33 +34,41 @@ dice_art={
 }
 
 
-def re_roll(players, current):
+def re_roll(total_round):
     die=dice()
     die.roll()
     round_score=die.determine_points()
-    total=players[current].score
     die.print_dice()
     print(f"You rolled a {die.indx[0]}, a {die.indx[1]}, and a {die.indx[2]}")
-    print(f"Round score: {round_score}")
-    return round_score, total
+    total_round += round_score
+    if round_score != 0:
+        print(f"Round score: {total_round}")
+    return round_score, total_round
 
 
 def turn(players, current):
-    print(f"Player {players[current].name}, you're up!")
+    print(f"\nPlayer {players[current].name}, you're up!")
+    total_round = 0
+    round_score = 0
     while True:
-        round_score, total=re_roll(players, current)
-        if round_score>49:
-            reroll=input(("Would you like to roll again? (y or n only or treated as a yes) ")).strip().lower()
+        round_score, total_round=re_roll(total_round)
+        if round_score>=50:
+            reroll=input(("Would you like to roll again? (y/n) ")).strip().lower()
+            round_score = 0
         else:
-            print("You Farkled!")
+            input("You Farkled! Enter to continue. ")
+            reroll = "n"
+            total_round = 0
+            round_score = 0
             break
+
         if reroll=="n" or reroll=="no":
             break
         else:
             print("Re-rolling...")
 
-    print(f"Overall score: {total+round_score}")
-    players[current].score+=round_score
+    players[current].score+=total_round
+    print(f"Player {players[current].name} current score: {players[current].score}")
 
     return players
 
@@ -68,13 +76,13 @@ def turn(players, current):
 def main():
     print("Welcome to Farkle!")
     print("If you dont know the rules, here is a pdf: https://www.playmonster.com/wp-content/uploads/2018/06/Farkle-Rules.pdf ")
-    input("Press enter to continue")
+    input("Press enter to continue. ")
 
     players = []
     win=False
     while True:
         try:
-            player_count=int(input("How many players are there? "))
+            player_count=int(input("\nHow many players are there? "))
             score_cap=int(input("What score do you want to play to? "))
             break
         except:
@@ -87,7 +95,9 @@ def main():
     
     gameloop=1
     while True:
-        input(f"Yall ready for round {gameloop}? (press enter to continue)")
+        for i in range(len(players)):
+            print(f"{players[i].name} score: {players[i].score}")
+        input(f"\nYall ready for round {gameloop}? (press enter to continue.) ")
         gameloop+=1
         for i in range(len(players)):
             players=turn(players, i)
@@ -97,8 +107,8 @@ def main():
                 break
         if win==True:
             break
-    print("The winner of the game has been determined...")
-    print(f"The winner of the game is player number {winning_player+1}, {players[winning_player].name}, you win!")
+    print("\nThe winner of the game has been determined...")
+    print(f"The winner of the game is player {players[winning_player].name} at {players[winning_player].score}, you win!")
     winner=players[winning_player].name
 
 
